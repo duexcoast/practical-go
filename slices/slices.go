@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+	"sort"
+)
 
 func main() {
 	var s []int
@@ -19,6 +23,13 @@ func main() {
 	fmt.Printf("s2 %#v\n", s2)
 	fmt.Println(concat([]string{"A", "B"}, []string{"C", "D"}))
 
+	vs := []float64{2, 1, 3}
+	fmt.Println(median(vs))
+	fmt.Println(vs)
+
+	fmt.Println(median(nil))
+	fmt.Println(reflect.TypeOf(2))
+
 }
 
 func appendInt(s []int, v int) []int {
@@ -34,10 +45,29 @@ func appendInt(s []int, v int) []int {
 	return s
 }
 
+func median(values []float64) (float64, error) {
+	if len(values) == 0 {
+		return 0, fmt.Errorf("median of empty slice")
+	}
+	// copy in order to not change values of underlying slice
+	nums := make([]float64, len(values))
+	copy(nums, values)
+
+	sort.Float64s(nums)
+	i := len(nums) / 2
+	if len(nums)%2 == 1 {
+		return nums[i], nil
+	}
+	v := (nums[i-1] + nums[i]) / 2
+	return v, nil
+}
+
 func concat(s1, s2 []string) []string {
 	// restriction: no "for" loops
-	s := make([]string, 0, len(s1)+len(s2))
-	s = append(s, s1...)
-	s = append(s, s2...)
+	// s1 = append(s1, s2...)
+	// return s1
+	s := make([]string, len(s1)+len(s2))
+	copy(s, s1)
+	copy(s[len(s1):], s2)
 	return s
 }

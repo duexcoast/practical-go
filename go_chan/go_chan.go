@@ -2,35 +2,68 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
-func main() {
-	ch := make(chan Person)
-	// go func() {
-	// 	ch <- "hi" // send
-	// }()
-	// msg := <-ch // receive
-	// fmt.Println(msg)
+/*
+for every value "n" in values, spin a goroutine that will
+- sleep "n" milliseconds
+- send "n" over a channel
 
-	go func() {
-		for i := 0; i < 3; i++ {
-			// msg := fmt.Sprintf("message #%d", i+1)
-			person := Person{
-				Age: i + 1,
-			}
-			ch <- person
-		}
-		close(ch)
-	}()
+in the function body, collect values from the channel to a slice and return it.
+*/
 
-	for msg := range ch {
-		fmt.Println("got:", msg)
+func sleepSort(values []int) []int {
+	ch := make(chan int)
+
+	for _, n := range values {
+		go func(n int) {
+			time.Sleep(time.Duration(n) * time.Millisecond)
+			ch <- n
+		}(n)
 	}
-	msg := <-ch
-	fmt.Println(msg)
 
-	msg, ok := <-ch // ch is closed
-	fmt.Printf("closed: %#v (ok=%v)", msg, ok)
+	var out []int
+	for range values {
+		n := <-ch
+		out = append(out, n)
+	}
+	return nil
+}
+
+func main() {
+	values := []int{4, 6, 2, 6, 7, 1}
+	sorted := sleepSort(values)
+	fmt.Println(sorted)
+
+	// ch := make(chan Person)
+	// // go func() {
+	// // 	ch <- "hi" // send
+	// // }()
+	// // msg := <-ch // receive
+	// // fmt.Println(msg)
+	//
+	// go func() {
+	// 	for i := 0; i < 3; i++ {
+	// 		// msg := fmt.Sprintf("message #%d", i+1)
+	// 		person := Person{
+	// 			Age: i + 1,
+	// 		}
+	// 		ch <- person
+	// 	}
+	// 	close(ch)
+	// }()
+	//
+	// for msg := range ch {
+	// 	fmt.Println("got:", msg)
+	// }
+	// msg := <-ch
+	// fmt.Println(msg)
+	//
+	// msg, ok := <-ch // ch is closed
+	// fmt.Printf("closed: %#v (ok=%v)", msg, ok)
+
+	// ch <- "hi" // ch is closed - panic
 
 }
 

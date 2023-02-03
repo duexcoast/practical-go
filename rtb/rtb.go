@@ -9,10 +9,10 @@ import (
 
 func main() {
 	// We have 50 msec to return an answer
-	ctx, cancel :=  // TODO
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
-	url := "https://go.dev" // return the 7¢ ad
-	// url := "http://go.dev" // return the default ad
+	// url := "https://go.dev" // return the 7¢ ad
+	url := "http://go.dev" // return the default ad
 	bid := bidOn(ctx, url)
 	fmt.Println(bid)
 }
@@ -20,7 +20,17 @@ func main() {
 // If algo didn't finish in time, return a default bid
 func bidOn(ctx context.Context, url string) Bid {
 	// TODO
-	return Bid{}
+	ch := make(chan Bid, 1)
+	go func() {
+		ch <- bestBid(url)
+	}()
+	select {
+	case bid := <-ch:
+		return bid
+	case <-ctx.Done():
+		return defaultBid
+
+	}
 }
 
 var defaultBid = Bid{
